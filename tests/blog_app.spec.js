@@ -64,6 +64,10 @@ describe('Blog app', () => {
         const locator = post.locator('..')
         
         await locator.getByRole('button', {name: 'view'}).click()
+        const likeDiv = locator.getByText('likes').locator('..')
+        await likeDiv.getByRole('button', {name: 'like'}).click()
+
+        await expect(likeDiv.getByText('likes 1')).toBeVisible()
       })
     })
   })
