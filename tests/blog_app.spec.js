@@ -1,4 +1,5 @@
 const { describe, test, expect, beforeEach } = require('@playwright/test')
+const { createPost, loginWith } = require('./helper')
 
 describe('Blog app', () => {
   beforeEach(async ({page, request}) => {
@@ -24,9 +25,7 @@ describe('Blog app', () => {
   
   describe('Login', () => {
     test('user can login successfuly', async ({page}) => {
-      await page.getByLabel('username').fill('yelino')
-      await page.getByLabel('password').fill('heslo123')
-      await page.getByRole('button', {name: 'login'}).click()
+      await loginWith(page, 'yelino', 'heslo123')
 
       await expect(page.getByText('Filip Madunicky logged in')).toBeVisible()
       await expect(page.getByRole('button', {name: 'logout'})).toBeVisible()
@@ -34,9 +33,7 @@ describe('Blog app', () => {
     })
 
     test('fails with wrong credentials', async ({page}) => {
-      await page.getByLabel('username').fill('yelino')
-      await page.getByLabel('password').fill('wrong')
-      await page.getByRole('button', {name: 'login'}).click()
+      await loginWith(page, 'yelino', 'wrong')
 
       await expect(page.locator('.notification.error')).toContainText('invalid username or password')
     })
@@ -44,20 +41,30 @@ describe('Blog app', () => {
 
   describe('when logged in', () => {
     beforeEach(async ({page}) => {
-      await page.getByLabel('username').fill('yelino')
-      await page.getByLabel('password').fill('heslo123')
-      await page.getByRole('button', {name: 'login'}).click()
+      await loginWith(page, 'yelino', 'heslo123')
     })
 
     test('user can create blog', async ({page}) => {
-      await page.getByRole('button', {name: 'create new blog'}).click()
+      await createPost(page, 'Test Post', 'test-url')
 
-      await page.getByLabel('title').fill('New testing blog')
-      await page.getByLabel('url').fill('url for testing blog')
-      await page.getByRole('button', {name: 'create'}).click()
+      await expect(page.locator('.notification.ok')).toContainText('a new blog Test Post by Filip Madunicky added')
+      await expect(page.locator('.post')).toContainText('Test Post')
+    })
 
-      await expect(page.locator('.notification.ok')).toContainText('a new blog New testing blog by Filip Madunicky added')
-      await expect(page.locator('.post')).toContainText('New testing blog')
+    describe('there are some blogs', () => {
+      beforeEach(async ({page}) => {
+        await createPost(page, 'First Post', 'first-url')
+        await createPost(page, 'Second Post', 'second-url')
+        await createPost(page, 'Third Post', 'third-url')
+        await createPost(page, 'Fourth Post', 'fourth-url')
+      })
+      
+      test('one of these can be liked', async ({page}) => {
+        const post = page.getByText('Second Post')
+        const locator = post.locator('..')
+        
+        await locator.getByRole('button', {name: 'view'}).click()
+      })
     })
   })
 })
