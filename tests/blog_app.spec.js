@@ -11,6 +11,13 @@ describe('Blog app', () => {
         password: 'heslo123'
       }
     })
+    await request.post('/api/users', {
+      data: {
+        username: 'kacer',
+        name: 'Robert Kacer',
+        password: 'kacka'
+      }
+    })
 
     await page.goto('/')
   })
@@ -102,7 +109,16 @@ describe('Blog app', () => {
         await expect(postLocator.filter({hasText: 'Second Post'})).toBeVisible()
       })
 
-      test('can not remove blog if you are not author', async ({page}) => {})
+      test('unauthorized user can not see remove button', async ({page}) => {
+        await page.getByRole('button', {name: 'logout'}).click()
+
+        const secondPost = page.getByText('Second Post')
+        const postLocator = secondPost.locator('..')
+
+        await postLocator.getByRole('button', {name: 'view'}).click()
+
+        await expect(postLocator.getByRole('button', {name: 'remove'})).not.toBeVisible()
+      })
     })
   })
 })
