@@ -69,6 +69,40 @@ describe('Blog app', () => {
 
         await expect(likeDiv.getByText('likes 1')).toBeVisible()
       })
+
+      test('author of the blog can remove it and confirm dialog', async ({page}) => {
+        page.on('dialog', async (dialog) => {
+          expect(dialog.type()).toContain('confirm')
+          expect(dialog.message()).toContain('Remove blog Second Post by Filip Madunicky')
+          await dialog.accept()
+        })
+
+        const secondPost = page.getByText('Second Post')
+        const postLocator = secondPost.locator('..')
+
+        await postLocator.getByRole('button', {name: 'view'}).click()
+        await postLocator.getByRole('button', {name: 'remove'}).click()
+
+        await expect(postLocator.filter({hasText: 'Second Post'})).not.toBeVisible()
+      })
+
+      test('author of the blog can remove it and dismiss dialog', async ({page}) => {
+        page.on('dialog', async (dialog) => {
+          expect(dialog.type()).toContain('confirm')
+          expect(dialog.message()).toContain('Remove blog Second Post by Filip Madunicky')
+          await dialog.dismiss()
+        })
+
+        const secondPost = page.getByText('Second Post')
+        const postLocator = secondPost.locator('..')
+
+        await postLocator.getByRole('button', {name: 'view'}).click()
+        await postLocator.getByRole('button', {name: 'remove'}).click()
+
+        await expect(postLocator.filter({hasText: 'Second Post'})).toBeVisible()
+      })
+
+      test('can not remove blog if you are not author', async ({page}) => {})
     })
   })
 })
