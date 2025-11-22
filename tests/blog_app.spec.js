@@ -1,5 +1,5 @@
 const { describe, test, expect, beforeEach } = require('@playwright/test')
-const { createPost, loginWith } = require('./helper')
+const { createPost, loginWith, likePost, clickView } = require('./helper')
 
 describe('Blog app', () => {
   beforeEach(async ({page, request}) => {
@@ -67,12 +67,9 @@ describe('Blog app', () => {
       })
       
       test('one of these can be liked', async ({page}) => {
-        const post = page.getByText('Second Post')
-        const locator = post.locator('..')
-        
-        await locator.getByRole('button', {name: 'view'}).click()
-        const likeDiv = locator.getByText('likes').locator('..')
-        await likeDiv.getByRole('button', {name: 'like'}).click()
+        const likeDiv = await likePost(page, 'Second Post', 1)
+
+        clickView(page, 'Second Post')
 
         await expect(likeDiv.getByText('likes 1')).toBeVisible()
       })
@@ -118,6 +115,18 @@ describe('Blog app', () => {
         await postLocator.getByRole('button', {name: 'view'}).click()
 
         await expect(postLocator.getByRole('button', {name: 'remove'})).not.toBeVisible()
+      })
+
+      test('blogs are sorted based likes', async ({page}) => {
+        // await page.pause()
+        await likePost(page, 'First Post', 1)
+        await likePost(page, 'Second Post', 2)
+        await likePost(page, 'Third Post', 3)
+        await likePost(page, 'Fourth Post', 4)
+
+        const posts = page.locator('.post > span')
+        const expectedPostsOrder = ['Fourth Post', 'Third Post', 'Second Post', 'First Post']
+        expect(posts).toHaveText(expectedPostsOrder)
       })
     })
   })

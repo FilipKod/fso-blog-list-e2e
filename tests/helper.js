@@ -14,4 +14,23 @@ const createPost = async (page, title, url) => {
   await page.locator('.post', { hasText: title }).waitFor()
 }
 
-export { loginWith, createPost }
+const likePost = async (page, postTitle, numberOfLikes) => {
+  let likeDiv = null
+  for (let i = 1; i <= numberOfLikes; i++) {
+    const post = page.getByText(postTitle)
+    const locator = post.locator('..')
+    await locator.getByRole('button', {name: 'view'}).click()
+    likeDiv = locator.getByText('likes').locator('..')
+    await likeDiv.getByRole('button', {name: 'like'}).click()
+    await likeDiv.filter({hasText: `likes ${i}`}).waitFor()
+    await locator.getByRole('button', {name: 'hide'}).click()
+  }
+  return likeDiv
+  
+}
+
+const clickView = async (page, postTitle) => {
+  await page.getByText(postTitle).locator('..').getByRole('button', {name: 'view'}).click()
+}
+
+export { loginWith, createPost, likePost, clickView }
