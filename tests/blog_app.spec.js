@@ -69,7 +69,7 @@ describe('Blog app', () => {
       test('one of these can be liked', async ({page}) => {
         const likeDiv = await likePost(page, 'Second Post', 1)
 
-        clickView(page, 'Second Post')
+        await clickView(page, 'Second Post')
 
         await expect(likeDiv.getByText('likes 1')).toBeVisible()
       })
